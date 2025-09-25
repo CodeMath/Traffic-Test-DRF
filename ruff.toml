@@ -1,0 +1,58 @@
+# ruff.toml
+target-version = "py313"
+line-length = 130
+exclude = [
+    ".git",
+    ".ruff_cache",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "migrations",
+    "*.pyc",
+    "*.pyo",
+    "build",
+    "dist",
+]
+
+# Lint 설정 (lint 섹션 하위로)
+[lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings  
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "DJ",   # flake8-django
+    "RUF",  # Ruff-specific rules
+]
+
+ignore = [
+    "E501",  # line too long - line-length로 처리
+    "B008",  # function calls in argument defaults
+    "F401", 
+    "F403",
+]
+
+[lint.pycodestyle]
+max-line-length = 130
+
+[lint.isort]
+known-third-party = ["django", "rest_framework", "celery", "drf_spectacular"]
+
+[lint.per-file-ignores]
+"__init__.py" = ["F401", "F403"]
+"tests/*.py" = ["S101"]
+"*/migrations/*.py" = ["E501", "N806"]
+
+[lint.mccabe]
+max-complexity = 10
+
+# Format 설정
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

@@ -1,0 +1,21 @@
+# tests/.coveragerc
+[run]
+source = apps/products
+omit =
+    */migrations/*
+    */tests/*
+    */venv/*
+    */env/*
+    */__pycache__/*
+    */settings/*
+    */wsgi.py
+    */asgi.py
+    manage.py
+
+[report]
+precision = 2
+show_missing = True
+skip_covered = False
+
+[html]
+directory = htmlcov
