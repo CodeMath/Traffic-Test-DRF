@@ -20,6 +20,8 @@ DEBUG = env("DEBUG")
 BASE_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
     "django.contrib.staticfiles",
 ]
 
@@ -27,8 +29,10 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "silk.middleware.SilkyMiddleware",
 ]
 
 
@@ -267,5 +271,7 @@ LOGGING = {
 # ========================
 # SILKY
 # ========================
-SILKY_PYTHON_PROFILER = True
-SILKY_PYTHON_PROFILER_BINARY = True
+SILKY_PYTHON_PROFILER = False  # 프로파일링 충돌 방지
+SILKY_PYTHON_PROFILER_BINARY = False
+SILKY_AUTHENTICATION = True
+SILKY_AUTHORISATION = True

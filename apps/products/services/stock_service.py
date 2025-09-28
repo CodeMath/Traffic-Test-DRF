@@ -94,7 +94,7 @@ class StockService:
             StockCheckResult: 재고 가용성 확인 결과
         """
         try:
-            stock = ProductStock.objects.select_related("product").get(product_id=product_id)
+            stock = ProductStock.objects.select_related("product").get(product___id=product_id)
             available = stock.available_stock
 
             if include_reserved:
@@ -117,7 +117,6 @@ class StockService:
                 message="상품을 찾을 수 없습니다.",
             )
 
-    @transaction.atomic
     def reserve_stock(
         self,
         product_id: str,
@@ -148,36 +147,38 @@ class StockService:
 
         try:
             # 재고 조회 및 잠금
-            # product = Product.objects.get(id=product_id)
-            stock = ProductStock.objects.select_related("product").select_for_update().get(product__id=product_id)
+            with transaction.atomic():
+                stock = ProductStock.objects.select_related("product").select_for_update().get(product__id=product_id)
 
-            # 가용 재고 확인
-            if stock.available_stock < quantity:
-                self.logger.warning(f"재고 부족: product={product_id}, available={stock.available_stock}, requested={quantity}")
-                return ReservationResult(
-                    success=False,
-                    error_message=f"재고 부족 (가용: {stock.available_stock}, 요청: {quantity})",
-                    error_code="INSUFFICIENT_STOCK",
+                # 가용 재고 확인
+                if stock.available_stock < quantity:
+                    self.logger.warning(
+                        f"재고 부족: product={product_id}, available={stock.available_stock}, requested={quantity}"
+                    )
+                    return ReservationResult(
+                        success=False,
+                        error_message=f"재고 부족 (가용: {stock.available_stock}, 요청: {quantity})",
+                        error_code="INSUFFICIENT_STOCK",
+                    )
+
+                # 예약 만료 시간 계산
+                duration = duration_minutes or self.DEFAULT_RESERVATION_DURATION
+                expires_at = timezone.now() + timedelta(minutes=duration)
+
+                # 예약 생성
+                reservation = StockReservation.objects.create(
+                    product_stock=stock,
+                    quantity=quantity,
+                    order_id=order_id or "",
+                    user_id=user,
+                    status=StockReservationStatus.PENDING,
+                    expires_at=expires_at,
                 )
 
-            # 예약 만료 시간 계산
-            duration = duration_minutes or self.DEFAULT_RESERVATION_DURATION
-            expires_at = timezone.now() + timedelta(minutes=duration)
-
-            # 예약 생성
-            reservation = StockReservation.objects.create(
-                product_stock=stock,
-                quantity=quantity,
-                order_id=order_id or "",
-                user_id=user,
-                status=StockReservationStatus.PENDING,
-                expires_at=expires_at,
-            )
-
-            # 재고 수량 업데이트
-            stock.reserved_stock = F("reserved_stock") + quantity
-            stock.available_stock = F("available_stock") - quantity
-            stock.save(update_fields=["reserved_stock", "available_stock"])
+                # 재고 수량 업데이트
+                stock.reserved_stock = F("reserved_stock") + quantity
+                stock.available_stock = F("available_stock") - quantity
+                stock.save(update_fields=["reserved_stock", "available_stock"])
 
             # 트랜잭션 로그 생성
             self._create_transaction_log(
@@ -355,7 +356,7 @@ class StockService:
             return False, "예약 취소 처리 중 오류가 발생했습니다"
 
     @transaction.atomic
-    @silk_profile(name="Inbound Stock")
+    # @silk_profile(name="Inbound Stock")  # 프로파일링 충돌 방지
     def inbound_stock(
         self,
         product_id: str,

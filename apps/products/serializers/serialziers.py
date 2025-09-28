@@ -3,6 +3,7 @@ import uuid
 from rest_framework import serializers
 
 from apps.products.models import Product, ProductStock, StockReservation
+from apps.products.services.optimistic_stock_service import optimistic_stock_service
 from apps.products.services.stock_service import stock_service
 
 
@@ -102,6 +103,8 @@ class ProductStockReserveResponseSerializer(serializers.Serializer):
     reservation = ProdStockReservationSerializer(
         help_text="예약 정보",
         read_only=True,
+        required=False,
+        allow_null=True,
     )
     error_message = serializers.CharField(help_text="예약 오류 메시지", required=False, allow_blank=True)
     error_code = serializers.CharField(help_text="예약 오류 코드", required=False, allow_blank=True)
@@ -132,11 +135,19 @@ class ProductStockReserveSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         order_id = str(uuid.uuid4())
-        result = stock_service.reserve_stock(
+        # result = stock_service.reserve_stock(
+        #     product_id=validated_data["product_id"],
+        #     quantity=validated_data["quantity"],
+        #     user=validated_data["user"],
+        #     order_id=order_id,
+        # )
+        result = optimistic_stock_service.reserve_stock_optimistic(
             product_id=validated_data["product_id"],
             quantity=validated_data["quantity"],
             user=validated_data["user"],
             order_id=order_id,
+            duration_minutes=30,
+            max_retries=3,
         )
         if result.success:
             return result

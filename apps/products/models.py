@@ -94,11 +94,33 @@ class ProductStock(TimeStampedModel):
     class Meta:
         verbose_name = "상품 재고"
         verbose_name_plural = "상품 재고"
-        indexes = (
-            models.Index(fields=["product"]),
-            models.Index(fields=["available_stock"]),
-            models.Index(fields=["warehouse_code"]),
-        )
+        indexes = [
+            # 기본 조회 최적화
+            models.Index(fields=["product"], name="stock_product_idx"),
+            models.Index(fields=["available_stock"], name="stock_available_idx"),
+            models.Index(fields=["warehouse_code"], name="stock_warehouse_idx"),
+
+            # 동시성 최적화를 위한 복합 인덱스
+            models.Index(
+                fields=["product", "available_stock"],
+                name="stock_product_available_idx",
+                condition=models.Q(available_stock__gt=0),  # 부분 인덱스
+            ),
+            models.Index(
+                fields=["product", "updated_at"],
+                name="stock_product_updated_idx"
+            ),
+
+            # 재고 부족 알림 최적화
+            models.Index(
+                fields=["available_stock", "min_stock_level"],
+                name="stock_low_stock_idx",
+                condition=models.Q(available_stock__lte=models.F("min_stock_level")),
+            ),
+
+            # 시계열 분석 최적화
+            models.Index(fields=["-updated_at"], name="stock_updated_desc_idx"),
+        ]
         constraints = (
             models.CheckConstraint(
                 condition=models.Q(physical_stock__gte=0),  # 5.1 버전 이상 사용, 이전 버전은 check 사용해야함
@@ -149,12 +171,34 @@ class StockReservation(TimeStampedModel):
     class Meta:
         verbose_name = "재고 예약"
         verbose_name_plural = "재고 예약"
-        indexes = (
-            models.Index(fields=["product_stock", "status"]),
-            models.Index(fields=["user_id", "status"]),
-            models.Index(fields=["order_id"]),
-            models.Index(fields=["expires_at", "status"]),
-        )
+        indexes = [
+            # 기본 조회 최적화
+            models.Index(fields=["product_stock", "status"], name="reservation_stock_status_idx"),
+            models.Index(fields=["user_id", "status"], name="reservation_user_status_idx"),
+            models.Index(fields=["order_id"], name="reservation_order_idx"),
+
+            # 만료 처리 최적화
+            models.Index(
+                fields=["expires_at", "status"],
+                name="reservation_expire_status_idx",
+                condition=models.Q(status="pending"),  # 대기 중인 예약만
+            ),
+
+            # 성능 최적화를 위한 복합 인덱스
+            models.Index(
+                fields=["product_stock", "status", "expires_at"],
+                name="rsv_stock_status_expire_idx"
+            ),
+            models.Index(
+                fields=["user_id", "-created_at"],
+                name="reservation_user_created_idx"
+            ),
+
+            # 시계열 분석 최적화
+            models.Index(fields=["-created_at"], name="reservation_created_desc_idx"),
+            models.Index(fields=["confirmed_at"], name="reservation_confirmed_idx"),
+            models.Index(fields=["cancelled_at"], name="reservation_cancelled_idx"),
+        ]
 
 
 # ================================
@@ -195,9 +239,23 @@ class StockTransaction(TimeStampedModel):
     class Meta:
         verbose_name = "재고 트랜잭션"
         verbose_name_plural = "재고 트랜잭션"
-        indexes = (
-            models.Index(fields=["product_stock", "-created_at"]),
-            models.Index(fields=["transaction_type", "-created_at"]),
-            models.Index(fields=["reference_type", "reference_id"]),
-        )
+        indexes = [
+            # 기본 조회 최적화
+            models.Index(fields=["product_stock", "-created_at"], name="transaction_stock_created_idx"),
+            models.Index(fields=["transaction_type", "-created_at"], name="transaction_type_created_idx"),
+            models.Index(fields=["reference_type", "reference_id"], name="transaction_reference_idx"),
+
+            # 분석 및 리포팅 최적화
+            models.Index(
+                fields=["product_stock", "transaction_type", "-created_at"],
+                name="txn_stock_type_created_idx"
+            ),
+            models.Index(fields=["-created_at"], name="transaction_created_desc_idx"),
+
+            # 데이터 정합성 검증 최적화
+            models.Index(
+                fields=["reference_type", "reference_id", "-created_at"],
+                name="transaction_ref_created_idx"
+            ),
+        ]
         ordering = ("-created_at",)

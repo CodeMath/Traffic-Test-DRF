@@ -12,6 +12,9 @@ DATABASES = {
         "PASSWORD": env("DB_PASSWORD"),  # noqa
         "HOST": env("DB_HOST"),  # noqa
         "PORT": env("DB_PORT"),  # noqa
+        "OPTIONS": {
+            "pool": True,
+        },
     }
 }
 

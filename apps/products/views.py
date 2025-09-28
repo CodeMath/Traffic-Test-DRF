@@ -2,6 +2,7 @@
 재고 관리 뷰
 """
 
+from django.core.cache import cache
 from rest_framework import status
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
@@ -13,6 +14,7 @@ from apps.products.models import Product, ProductStock, StockReservation
 from apps.products.serializers.serialziers import (
     ProductSerializer,
     ProductStockInboundSerializer,
+    ProductStockReserveResponseSerializer,
     ProductStockReserveSerializer,
     ProductStockSerializer,
 )
@@ -89,12 +91,21 @@ class ProductStockReserveView(APIView):
         """
         상품 재고 예약 뷰
         """
-        # try:
-
-        # except Exception as e:
-        #     return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
         serializer = self.serializer_class(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        # ReservationResult 객체 반환
+        reservation_result = serializer.save()
+
+        # ReservationResult를 응답용 시리얼라이저로 변환
+        response_data = {
+            "success": reservation_result.success,
+            "reservation": reservation_result.reservation,
+            "error_message": reservation_result.error_message,
+            "error_code": reservation_result.error_code,
+        }
+
+        response_serializer = ProductStockReserveResponseSerializer(data=response_data)
+        response_serializer.is_valid(raise_exception=True)
+
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
