@@ -39,7 +39,7 @@ if __name__ == "__main__":
         print(f"📝 {count:,}명의 테스트 사용자 생성을 시작합니다...")
 
         # 기존 사용자 수 확인
-        existing_count = User.objects.filter(username__startswith='user').count()
+        existing_count = User.objects.filter(username__startswith="user").count()
         print(f"📊 기존 테스트 사용자: {existing_count:,}명")
 
         # 이미 충분한 사용자가 있는지 확인
@@ -72,19 +72,21 @@ if __name__ == "__main__":
                     with transaction.atomic():
                         User.objects.bulk_create(batch_users, ignore_conflicts=True)
                         created_count += len(batch_users)
-                        print(f"⏳ {created_count:,}/{users_to_create:,} 사용자 생성 중... "
-                              f"({(created_count/users_to_create*100):.1f}%)")
+                        print(
+                            f"⏳ {created_count:,}/{users_to_create:,} 사용자 생성 중... "
+                            f"({(created_count / users_to_create * 100):.1f}%)"
+                        )
                 except Exception as e:
                     print(f"❌ 배치 생성 실패: {e}")
                     continue
 
         # 최종 결과 확인
-        total_users = User.objects.filter(username__startswith='user').count()
+        total_users = User.objects.filter(username__startswith="user").count()
         print(f"✅ 총 {total_users:,}명의 테스트 사용자가 생성되었습니다!")
         print(f"📈 이번 실행에서 {created_count:,}명의 새 사용자가 추가되었습니다.")
 
         # 샘플 사용자 확인
-        sample_users = User.objects.filter(username__startswith='user')[:5]
+        sample_users = User.objects.filter(username__startswith="user")[:5]
         print("\n📋 생성된 사용자 샘플:")
         for user in sample_users:
             print(f"  - {user.username} (ID: {user.id})")
@@ -95,12 +97,12 @@ if __name__ == "__main__":
         """테스트 사용자 검증"""
         print("🔍 테스트 사용자 검증 중...")
 
-        total_count = User.objects.filter(username__startswith='user').count()
+        total_count = User.objects.filter(username__startswith="user").count()
         print(f"📊 총 사용자 수: {total_count:,}명")
 
         # 패스워드 검증 (샘플)
-        test_user = User.objects.filter(username='user0').first()
-        if test_user and test_user.check_password('password'):
+        test_user = User.objects.filter(username="user0").first()
+        if test_user and test_user.check_password("password"):
             print("✅ 비밀번호 검증 성공")
         else:
             print("❌ 비밀번호 검증 실패")
@@ -110,9 +112,9 @@ if __name__ == "__main__":
     def cleanup_test_users():
         """테스트 사용자 정리 (선택적)"""
         response = input("⚠️ 모든 테스트 사용자를 삭제하시겠습니까? (y/N): ")
-        if response.lower() == 'y':
-            count = User.objects.filter(username__startswith='user').count()
-            User.objects.filter(username__startswith='user').delete()
+        if response.lower() == "y":
+            count = User.objects.filter(username__startswith="user").count()
+            User.objects.filter(username__startswith="user").delete()
             print(f"🗑️ {count:,}명의 테스트 사용자가 삭제되었습니다.")
         else:
             print("❌ 삭제가 취소되었습니다.")
@@ -138,4 +140,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"❌ 오류 발생: {e}")
         import traceback
+
         traceback.print_exc()

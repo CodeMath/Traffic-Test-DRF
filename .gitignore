@@ -97,3 +97,6 @@ coverage.xml
 # Claude
 .claude
 CLAUDE.md
+
+# DBMS
+postgres-data/

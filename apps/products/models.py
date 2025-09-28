@@ -99,25 +99,19 @@ class ProductStock(TimeStampedModel):
             models.Index(fields=["product"], name="stock_product_idx"),
             models.Index(fields=["available_stock"], name="stock_available_idx"),
             models.Index(fields=["warehouse_code"], name="stock_warehouse_idx"),
-
             # 동시성 최적화를 위한 복합 인덱스
             models.Index(
                 fields=["product", "available_stock"],
                 name="stock_product_available_idx",
                 condition=models.Q(available_stock__gt=0),  # 부분 인덱스
             ),
-            models.Index(
-                fields=["product", "updated_at"],
-                name="stock_product_updated_idx"
-            ),
-
+            models.Index(fields=["product", "updated_at"], name="stock_product_updated_idx"),
             # 재고 부족 알림 최적화
             models.Index(
                 fields=["available_stock", "min_stock_level"],
                 name="stock_low_stock_idx",
                 condition=models.Q(available_stock__lte=models.F("min_stock_level")),
             ),
-
             # 시계열 분석 최적화
             models.Index(fields=["-updated_at"], name="stock_updated_desc_idx"),
         ]
@@ -176,24 +170,15 @@ class StockReservation(TimeStampedModel):
             models.Index(fields=["product_stock", "status"], name="reservation_stock_status_idx"),
             models.Index(fields=["user_id", "status"], name="reservation_user_status_idx"),
             models.Index(fields=["order_id"], name="reservation_order_idx"),
-
             # 만료 처리 최적화
             models.Index(
                 fields=["expires_at", "status"],
                 name="reservation_expire_status_idx",
                 condition=models.Q(status="pending"),  # 대기 중인 예약만
             ),
-
             # 성능 최적화를 위한 복합 인덱스
-            models.Index(
-                fields=["product_stock", "status", "expires_at"],
-                name="rsv_stock_status_expire_idx"
-            ),
-            models.Index(
-                fields=["user_id", "-created_at"],
-                name="reservation_user_created_idx"
-            ),
-
+            models.Index(fields=["product_stock", "status", "expires_at"], name="rsv_stock_status_expire_idx"),
+            models.Index(fields=["user_id", "-created_at"], name="reservation_user_created_idx"),
             # 시계열 분석 최적화
             models.Index(fields=["-created_at"], name="reservation_created_desc_idx"),
             models.Index(fields=["confirmed_at"], name="reservation_confirmed_idx"),
@@ -244,18 +229,10 @@ class StockTransaction(TimeStampedModel):
             models.Index(fields=["product_stock", "-created_at"], name="transaction_stock_created_idx"),
             models.Index(fields=["transaction_type", "-created_at"], name="transaction_type_created_idx"),
             models.Index(fields=["reference_type", "reference_id"], name="transaction_reference_idx"),
-
             # 분석 및 리포팅 최적화
-            models.Index(
-                fields=["product_stock", "transaction_type", "-created_at"],
-                name="txn_stock_type_created_idx"
-            ),
+            models.Index(fields=["product_stock", "transaction_type", "-created_at"], name="txn_stock_type_created_idx"),
             models.Index(fields=["-created_at"], name="transaction_created_desc_idx"),
-
             # 데이터 정합성 검증 최적화
-            models.Index(
-                fields=["reference_type", "reference_id", "-created_at"],
-                name="transaction_ref_created_idx"
-            ),
+            models.Index(fields=["reference_type", "reference_id", "-created_at"], name="transaction_ref_created_idx"),
         ]
         ordering = ("-created_at",)

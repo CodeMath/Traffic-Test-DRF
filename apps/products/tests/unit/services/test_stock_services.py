@@ -62,7 +62,11 @@ class TestStockService:
     def test_reserve_stock_success(self, stock_service, sample_product_stock, regular_user):
         """재고 예약 성공 테스트"""
         result = stock_service.reserve_stock(
-            product_id=str(sample_product_stock.product.id), quantity=30, user=regular_user, order_id="ORDER-123", duration_minutes=60
+            product_id=str(sample_product_stock.product.id),
+            quantity=30,
+            user=regular_user,
+            order_id="ORDER-123",
+            duration_minutes=60,
         )
 
         assert isinstance(result, ReservationResult)
@@ -84,7 +88,9 @@ class TestStockService:
 
     def test_reserve_stock_insufficient_stock(self, stock_service, sample_product_stock, regular_user):
         """재고 부족으로 예약 실패 테스트"""
-        result = stock_service.reserve_stock(product_id=str(sample_product_stock.product.id), quantity=150, user=regular_user, order_id="ORDER-123")
+        result = stock_service.reserve_stock(
+            product_id=str(sample_product_stock.product.id), quantity=150, user=regular_user, order_id="ORDER-123"
+        )
 
         assert result.success is False
         assert result.reservation is None
@@ -93,7 +99,9 @@ class TestStockService:
 
     def test_reserve_stock_invalid_quantity(self, stock_service, sample_product_stock, regular_user):
         """잘못된 수량으로 예약 실패 테스트"""
-        result = stock_service.reserve_stock(product_id=str(sample_product_stock.product.id), quantity=0, user=regular_user, order_id="ORDER-123")
+        result = stock_service.reserve_stock(
+            product_id=str(sample_product_stock.product.id), quantity=0, user=regular_user, order_id="ORDER-123"
+        )
 
         assert result.success is False
         assert result.error_code == "INVALID_QUANTITY"
@@ -101,7 +109,9 @@ class TestStockService:
 
     def test_reserve_stock_product_not_found(self, stock_service, regular_user):
         """존재하지 않는 상품 예약 실패 테스트"""
-        result = stock_service.reserve_stock(product_id="00000000-0000-0000-0000-000000000000", quantity=10, user=regular_user, order_id="ORDER-123")
+        result = stock_service.reserve_stock(
+            product_id="00000000-0000-0000-0000-000000000000", quantity=10, user=regular_user, order_id="ORDER-123"
+        )
 
         assert result.success is False
         assert result.error_code == "STOCK_NOT_FOUND"
@@ -179,7 +189,9 @@ class TestStockService:
         # 확정된 예약 생성
         confirmed_reservation = StockReservationFactory(status=StockReservationStatus.CONFIRMED, confirmed_at=timezone.now())
 
-        success, message = stock_service.cancel_reservation(str(confirmed_reservation.id), superuser, reason="강제 취소", force=True)
+        success, message = stock_service.cancel_reservation(
+            str(confirmed_reservation.id), superuser, reason="강제 취소", force=True
+        )
 
         assert success is True
         assert "성공" in message
@@ -214,7 +226,9 @@ class TestStockService:
 
     def test_inbound_stock_product_not_found(self, stock_service, superuser):
         """존재하지 않는 상품 입고 실패 테스트"""
-        success, message = stock_service.inbound_stock(product_id="00000000-0000-0000-0000-000000000000", quantity=50, user=superuser)
+        success, message = stock_service.inbound_stock(
+            product_id="00000000-0000-0000-0000-000000000000", quantity=50, user=superuser
+        )
 
         assert success is False
         assert "찾을 수 없습니다" in message
@@ -297,7 +311,9 @@ class TestStockService:
         # 확정된 예약 생성
         confirmed_reservation = StockReservationFactory(status=StockReservationStatus.CONFIRMED, confirmed_at=timezone.now())
 
-        success, message = stock_service.cancel_reservation(str(confirmed_reservation.id), regular_user, reason="강제 취소 시도", force=True)
+        success, message = stock_service.cancel_reservation(
+            str(confirmed_reservation.id), regular_user, reason="강제 취소 시도", force=True
+        )
 
         assert success is False
         assert "강제 취소 권한이 없습니다" in message

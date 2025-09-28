@@ -9,12 +9,13 @@
 from django.contrib.auth.models import User
 from django.db import transaction
 
+
 def create_test_users(count=10000, batch_size=1000):
     """테스트 사용자 생성 함수"""
     print(f"📝 {count:,}명의 테스트 사용자 생성을 시작합니다...")
 
     # 기존 사용자 수 확인
-    existing_count = User.objects.filter(username__startswith='user').count()
+    existing_count = User.objects.filter(username__startswith="user").count()
     print(f"📊 기존 테스트 사용자: {existing_count:,}명")
 
     if existing_count >= count:
@@ -45,24 +46,25 @@ def create_test_users(count=10000, batch_size=1000):
                 with transaction.atomic():
                     User.objects.bulk_create(batch_users, ignore_conflicts=True)
                     created_count += len(batch_users)
-                    progress = (created_count / users_to_create * 100)
+                    progress = created_count / users_to_create * 100
                     print(f"⏳ {created_count:,}/{users_to_create:,} 사용자 생성 중... ({progress:.1f}%)")
             except Exception as e:
                 print(f"❌ 배치 생성 실패: {e}")
                 continue
 
     # 최종 결과 확인
-    total_users = User.objects.filter(username__startswith='user').count()
+    total_users = User.objects.filter(username__startswith="user").count()
     print(f"✅ 총 {total_users:,}명의 테스트 사용자가 생성되었습니다!")
     print(f"📈 이번 실행에서 {created_count:,}명의 새 사용자가 추가되었습니다.")
 
     # 샘플 사용자 확인
-    sample_users = User.objects.filter(username__startswith='user')[:3]
+    sample_users = User.objects.filter(username__startswith="user")[:3]
     print("\n📋 생성된 사용자 샘플:")
     for user in sample_users:
         print(f"  - {user.username} (ID: {user.id})")
 
     return total_users
+
 
 # 자동 실행
 if __name__ == "__main__":

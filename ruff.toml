@@ -18,7 +18,7 @@ exclude = [
 [lint]
 select = [
     "E",    # pycodestyle errors
-    "W",    # pycodestyle warnings  
+    "W",    # pycodestyle warnings
     "F",    # pyflakes
     "I",    # isort
     "N",    # pep8-naming
@@ -32,7 +32,7 @@ select = [
 ignore = [
     "E501",  # line too long - line-length로 처리
     "B008",  # function calls in argument defaults
-    "F401", 
+    "F401",
     "F403",
 ]
 

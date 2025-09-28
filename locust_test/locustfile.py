@@ -39,17 +39,9 @@ class StockTestUser(FastHttpUser):
         user_id = random.randint(0, self.USER_POOL_SIZE - 1)
         self.username = f"user{user_id}"
 
-        auth_data = {
-            "username": self.username,
-            "password": "password"
-        }
+        auth_data = {"username": self.username, "password": "password"}
 
-        with self.client.post(
-            "/api/token/",
-            json=auth_data,
-            name="01_jwt_auth",
-            catch_response=True
-        ) as response:
+        with self.client.post("/api/token/", json=auth_data, name="01_jwt_auth", catch_response=True) as response:
             if response.status_code == 200:
                 try:
                     token_data = response.json()
@@ -78,10 +70,7 @@ class StockTestUser(FastHttpUser):
         self.check_token_validity()
 
         with self.client.get(
-            "/api/products/",
-            headers=self.get_auth_headers(),
-            name="02_product_list",
-            catch_response=True
+            "/api/products/", headers=self.get_auth_headers(), name="02_product_list", catch_response=True
         ) as response:
             if response.status_code == 200:
                 try:
@@ -117,7 +106,7 @@ class StockTestUser(FastHttpUser):
                 f"/api/products/stock/available/?product_id={self.current_product_id}",
                 headers=self.get_auth_headers(),
                 name="03_stock_availability",
-                catch_response=True
+                catch_response=True,
             ) as response:
                 if response.status_code == 200:
                     try:
@@ -153,23 +142,20 @@ class StockTestUser(FastHttpUser):
             # 1-100개 사이 랜덤 수량 생성
             random_quantity = random.randint(1, 100)
 
-            reservation_data = {
-                "product_id": self.current_product_id,
-                "quantity": random_quantity
-            }
+            reservation_data = {"product_id": self.current_product_id, "quantity": random_quantity}
 
             with self.client.post(
                 "/api/products/stock/reserve/",
                 json=reservation_data,
                 headers=self.get_auth_headers(),
                 name="04_stock_reserve",
-                catch_response=True
+                catch_response=True,
             ) as response:
                 if response.status_code == 201:
                     try:
                         result = response.json()
                         # 새로운 응답 구조에 맞게 수정
-                        if result.get('success', False):
+                        if result.get("success", False):
                             response.success()
                         else:
                             # success가 false여도 201이면 비즈니스 로직 상 정상 응답
@@ -209,6 +195,7 @@ class HighVolumeStockUser(StockTestUser):
     고부하 테스트를 위한 사용자 클래스
     더 짧은 대기시간과 공격적인 요청 패턴
     """
+
     wait_time = between(0.1, 1.0)  # 더 짧은 대기시간
 
     @task(weight=5)
