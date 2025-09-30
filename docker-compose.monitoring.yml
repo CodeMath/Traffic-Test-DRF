@@ -1,0 +1,97 @@
+services:
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traffics-django
+    ports:
+      - "8882:8882"
+    env_file:
+      - .env.docker
+    depends_on:
+      postgresql_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - logs:/app/logs
+    networks:
+      - traffic_test_network
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: traffics-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    depends_on:
+      - django
+    networks:
+      - traffic_test_network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: traffics-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - traffic_test_network
+    restart: unless-stopped
+
+  postgresql_db:
+    image: postgres:17.6
+    container_name: traffics-postgres
+    environment:
+      - POSTGRES_PASSWORD=DATABASSE_PSW
+      - POSTGRES_DB=traffic_test
+      - POSTGRES_USER=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - traffic_test_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8.2.1-bookworm
+    container_name: traffics-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - traffic_test_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  postgres_data:
+  logs:
+
+networks:
+  traffic_test_network:
+    driver: bridge
