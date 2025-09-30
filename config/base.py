@@ -17,6 +17,9 @@ SECRET_KEY = env("SECRET_KEY")
 
 DEBUG = env("DEBUG")
 
+ALLOWED_HOSTS = ["*"]
+
+
 BASE_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -26,6 +29,7 @@ BASE_APPS = [
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -33,6 +37,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 
@@ -46,6 +51,7 @@ THIRD_PARTY_APPS = [
     "drf_spectacular",
     "django_filters",
     "django_redis",
+    "django_prometheus",
 ]
 
 
