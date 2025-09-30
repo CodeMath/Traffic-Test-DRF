@@ -55,9 +55,7 @@ THIRD_PARTY_APPS = [
 if DEBUG:
     THIRD_PARTY_APPS += [
         "django_extensions",
-        "silk",
     ]
-    MIDDLEWARE += ["silk.middleware.SilkyMiddleware"]
 
 
 # ========================
@@ -268,10 +266,10 @@ LOGGING = {
     },
 }
 
-# ========================
-# SILKY
-# ========================
-SILKY_PYTHON_PROFILER = False  # 프로파일링 충돌 방지
-SILKY_PYTHON_PROFILER_BINARY = False
-SILKY_AUTHENTICATION = True
-SILKY_AUTHORISATION = True
+# # ========================
+# # SILKY
+# # ========================
+# SILKY_PYTHON_PROFILER = False  # 프로파일링 충돌 방지
+# SILKY_PYTHON_PROFILER_BINARY = False
+# SILKY_AUTHENTICATION = False
+# SILKY_AUTHORISATION = False

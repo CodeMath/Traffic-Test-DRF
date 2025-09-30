@@ -2,8 +2,6 @@
 재고 시스템 최적화된 Django 설정
 """
 
-import psycopg
-
 from .base import *
 
 # ===============================
@@ -19,16 +17,8 @@ DATABASES = {
         "HOST": env("DB_HOST"),
         "PORT": env("DB_PORT"),
         "OPTIONS": {
-            # 연결 풀링 설정
-            "pool": True,
-            "pool_size": 20,
-            "max_overflow": 30,
-            "pool_timeout": 30,
-            "pool_recycle": 3600,
             # 격리 수준 설정 - REPEATABLE READ
-            "isolation_level": psycopg.IsolationLevel.REPEATABLE_READ,
-            "options": "-c default_transaction_isolation=repeatable\\ read",
-            # 성능 최적화
+            "isolation_level": 2,  # ISOLATION_LEVEL_REPEATABLE_READ
             "options": " ".join(
                 [
                     "-c default_transaction_isolation=repeatable\\ read",
@@ -38,7 +28,7 @@ DATABASES = {
                 ]
             ),
         },
-        "CONN_MAX_AGE": 600,  # 10분
+        "CONN_MAX_AGE": 600,  # 10분 연결 유지
         "CONN_HEALTH_CHECKS": True,
     }
 }
@@ -181,14 +171,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # 성능 모니터링 (개발 환경에서만)
-    *(
-        [
-            "silk.middleware.SilkMiddleware",
-        ]
-        if DEBUG
-        else []
-    ),
+    # 성능 모니터링 제거됨 (silk 데드락 방지)
     # 커스텀 성능 모니터링 미들웨어
     "apps.products.middleware.StockPerformanceMiddleware",
 ]
@@ -261,14 +244,10 @@ SESSION_COOKIE_AGE = 3600  # 1시간
 if DEBUG:
     # 개발 환경 전용 설정
     INSTALLED_APPS += [
-        "silk",
         "django_extensions",
     ]
 
-    # 실크 프로파일링 설정
-    SILKY_PYTHON_PROFILER = True
-    SILKY_PYTHON_PROFILER_BINARY = True
-    SILKY_PYTHON_PROFILER_RESULT_PATH = "logs/profiles/"
+    # Silk 프로파일링 설정 제거됨 (데드락 방지)
 
 else:
     # 프로덕션 환경 전용 설정

@@ -19,10 +19,18 @@ class ProductSerializer(serializers.ModelSerializer):
 class ProductStockSerializer(serializers.ModelSerializer):
     """상품 재고 정보 시리얼라이저"""
 
+    product_id = serializers.UUIDField(source="product.id", read_only=True)
+    product_name = serializers.CharField(source="product.name", read_only=True)
+    product_price = serializers.DecimalField(source="product.price", read_only=True, max_digits=10, decimal_places=2)
+    product_status = serializers.CharField(source="product.status", read_only=True)
+
     class Meta:
         model = ProductStock
         fields = (
-            "id",
+            "product_id",
+            "product_name",
+            "product_price",
+            "product_status",
             "physical_stock",
             "reserved_stock",
             "available_stock",
@@ -31,7 +39,7 @@ class ProductStockSerializer(serializers.ModelSerializer):
             "warehouse_code",
             "updated_at",
         )
-        read_only_fields = ("id", "updated_at")
+        read_only_fields = ("updated_at",)
 
 
 class ProductStockInboundSerializer(serializers.Serializer):
@@ -91,7 +99,7 @@ class ProdStockReservationSerializer(serializers.ModelSerializer):
     class Meta:
         model = StockReservation
         fields = ("id", "product", "quantity", "user_id", "status", "expires_at")
-        read_only_fields = ("id", "created_at", "updated_at")
+        read_only_fields = ("id", "expires_at")
 
 
 class ProductStockReserveResponseSerializer(serializers.Serializer):
@@ -102,12 +110,10 @@ class ProductStockReserveResponseSerializer(serializers.Serializer):
     )
     reservation = ProdStockReservationSerializer(
         help_text="예약 정보",
-        read_only=True,
-        required=False,
         allow_null=True,
     )
-    error_message = serializers.CharField(help_text="예약 오류 메시지", required=False, allow_blank=True)
-    error_code = serializers.CharField(help_text="예약 오류 코드", required=False, allow_blank=True)
+    error_message = serializers.CharField(help_text="예약 오류 메시지", allow_blank=True)
+    error_code = serializers.CharField(help_text="예약 오류 코드", allow_blank=True)
 
 
 class ProductStockReserveSerializer(serializers.Serializer):

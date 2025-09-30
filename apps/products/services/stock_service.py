@@ -12,7 +12,6 @@ from django.core.cache import cache
 from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
-from silk.profiling.profiler import silk_profile
 
 from apps.products.models import (
     Product,
@@ -356,7 +355,6 @@ class StockService:
             return False, "예약 취소 처리 중 오류가 발생했습니다"
 
     @transaction.atomic
-    # @silk_profile(name="Inbound Stock")  # 프로파일링 충돌 방지
     def inbound_stock(
         self,
         product_id: str,

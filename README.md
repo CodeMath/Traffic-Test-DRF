@@ -10,6 +10,10 @@
 
 Traffic Django는 대용량 트래픽 환경에서 안정적인 재고 관리를 위해 설계된 고성능 DRF 애플리케이션입니다. 부하 테스트 및 성능 테스트 목적으로 공부를 위해 시작했습니다.
 
+### 회고록
+
+지속적으로 업그레이드 하며, [회고록](https://jadecon.notion.site/DRF-with-Transaction-27a40f9a6b7c80aa8d16c6102bd7f578?source=github) 을 작성하고 있습니다. Django, DRF, DB 등에 대한 주요 내용을 담고 있으며 공부한 흔적을 보실 수 있습니다.
+
 ### ✨ 주요 특징
 
 - **고성능 재고 관리**: Redis 캐싱과 PostgreSQL을 활용한 빠른 데이터 처리

@@ -12,9 +12,8 @@ DATABASES = {
         "PASSWORD": env("DB_PASSWORD"),  # noqa
         "HOST": env("DB_HOST"),  # noqa
         "PORT": env("DB_PORT"),  # noqa
-        "OPTIONS": {
-            "pool": True,
-        },
+        "CONN_MAX_AGE": 600,  # 10분 연결 유지
+        "CONN_HEALTH_CHECKS": True,
     }
 }
 

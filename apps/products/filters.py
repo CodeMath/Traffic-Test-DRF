@@ -1,6 +1,6 @@
 from django_filters import rest_framework as filters
 
-from apps.products.models import Product, ProductStatus, ProductStock
+from apps.products.models import Product, ProductStatus, ProductStock, StockReservation, StockReservationStatus
 
 
 class ProductFilter(filters.FilterSet):
@@ -38,3 +38,11 @@ class ProductStockFilter(filters.FilterSet):
             "physical_stock",
             "warehouse_code",
         ]
+
+
+class ProductStockReserveFilter(filters.FilterSet):
+    status = filters.ChoiceFilter(choices=StockReservationStatus.choices, label="예약 상태")
+
+    class Meta:
+        model = StockReservation
+        fields = ["status"]

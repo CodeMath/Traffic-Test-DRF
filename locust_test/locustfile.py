@@ -19,7 +19,7 @@ class StockTestUser(FastHttpUser):
     wait_time = between(1, 3)  # 요청 간 1-3초 대기
 
     # 클래스 변수로 사용자 풀 정의
-    USER_POOL_SIZE = 10000
+    USER_POOL_SIZE = 1000
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -190,23 +190,23 @@ class StockTestUser(FastHttpUser):
             self.test_stock_reservation()
 
 
-class HighVolumeStockUser(StockTestUser):
-    """
-    고부하 테스트를 위한 사용자 클래스
-    더 짧은 대기시간과 공격적인 요청 패턴
-    """
+# class HighVolumeStockUser(StockTestUser):
+#     """
+#     고부하 테스트를 위한 사용자 클래스
+#     더 짧은 대기시간과 공격적인 요청 패턴
+#     """
 
-    wait_time = between(0.1, 1.0)  # 더 짧은 대기시간
+#     wait_time = between(0.1, 1.0)  # 더 짧은 대기시간
 
-    @task(weight=5)
-    def rapid_stock_check(self):
-        """빠른 재고 체크"""
-        self.test_stock_availability()
+#     @task(weight=5)
+#     def rapid_stock_check(self):
+#         """빠른 재고 체크"""
+#         self.test_stock_availability()
 
-    @task(weight=3)
-    def rapid_reservation(self):
-        """빠른 예약 시도"""
-        self.test_stock_reservation()
+#     @task(weight=3)
+#     def rapid_reservation(self):
+#         """빠른 예약 시도"""
+#         self.test_stock_reservation()
 
 
 # 사용 예시:
