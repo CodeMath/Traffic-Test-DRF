@@ -2,14 +2,17 @@
 재고 관리 뷰
 """
 
-from django.core.cache import cache
+import time
+from datetime import datetime
+
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, generics
 
+from apps.products.cache import ProductCacheManager
 from apps.products.filters import ProductFilter, ProductStockFilter, ProductStockReserveFilter
 from apps.products.models import Product, ProductStock, StockReservation
 from apps.products.serializers.serialziers import (
@@ -40,6 +43,40 @@ class ProductViewSet(ModelViewSet):
         if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsAdminUser()]
         return super().get_permissions()
+
+    def list(self, request, *args, **kwargs):
+        # 캐시 데이터 조회
+        cached_data = ProductCacheManager.get_list(
+            page=request.query_params.get("page", 1),
+            limit=request.query_params.get("limit", 10),
+            filters=request.query_params,
+        )
+        if cached_data:
+            return Response(cached_data)
+
+        # 실제 조회
+        response = super().list(request, *args, **kwargs)
+
+        # 캐싱
+        ProductCacheManager.set_list(
+            data=response.data,
+            page=request.query_params.get("page", 1),
+            limit=request.query_params.get("limit", 10),
+            filters=request.query_params,
+        )
+        return response
+
+    def perform_create(self, serializer):
+        serializer.save()
+        ProductCacheManager.invalidate_list()  # 캐시 무효화
+
+    def perform_update(self, serializer):
+        serializer.save()
+        ProductCacheManager.invalidate_list()  # 캐시 무효화
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        ProductCacheManager.invalidate_list()  # 캐시 무효화
 
 
 # ================================

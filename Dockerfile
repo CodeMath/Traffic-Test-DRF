@@ -21,6 +21,10 @@ RUN pip install --no-cache-dir -U pip \
 COPY pyproject.toml poetry.lock /app/
 RUN poetry install --no-root --no-interaction --no-ansi
 
+# Entrypoint 스크립트 먼저 복사 및 실행 권한 부여
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # 애플리케이션 코드 복사
 COPY . /app
 
@@ -30,19 +34,5 @@ RUN mkdir -p /app/logs
 # 포트 노출
 EXPOSE 8882
 
-# Gunicorn으로 실행
-CMD ["gunicorn", "config.wsgi:application", \
-     "--bind", "0.0.0.0:8882", \
-     "--workers", "3", \
-     "--threads", "3", \
-     "--worker-class", "gthread", \
-     "--worker-tmp-dir", "/dev/shm", \
-     "--max-requests", "1200", \
-     "--max-requests-jitter", "50", \
-     "--timeout", "30", \
-     "--graceful-timeout", "30", \
-     "--keep-alive", "5", \
-     "--log-level", "info", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-", \
-     "--name", "traffics"]
+# Entrypoint 스크립트 실행
+ENTRYPOINT ["/app/entrypoint.sh"]

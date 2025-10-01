@@ -1,0 +1,220 @@
+{
+  "dashboard": {
+    "title": "Django Traffic Test Dashboard",
+    "tags": ["django", "traffic", "stock"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "요청 처리율 (RPS)",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+        "targets": [
+          {
+            "expr": "rate(django_http_requests_total_by_view_transport_method_total[1m])",
+            "legendFormat": "{{view}} - {{method}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "reqps", "label": "Requests/sec" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "평균 응답 시간",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+        "targets": [
+          {
+            "expr": "rate(django_http_requests_latency_seconds_by_view_method_sum[5m]) / rate(django_http_requests_latency_seconds_by_view_method_count[5m])",
+            "legendFormat": "{{view}} - {{method}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "s", "label": "Response Time" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "HTTP 상태 코드 분포",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+        "targets": [
+          {
+            "expr": "rate(django_http_responses_total_by_status_total[1m])",
+            "legendFormat": "{{status}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "reqps", "label": "Requests/sec" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "메모리 사용량",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+        "targets": [
+          {
+            "expr": "process_resident_memory_bytes / 1024 / 1024",
+            "legendFormat": "RSS Memory (MB)",
+            "refId": "A"
+          },
+          {
+            "expr": "process_virtual_memory_bytes / 1024 / 1024",
+            "legendFormat": "Virtual Memory (MB)",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          { "format": "mbytes", "label": "Memory" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Database 쿼리 수",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+        "targets": [
+          {
+            "expr": "rate(django_db_query_count_total[1m])",
+            "legendFormat": "{{alias}} - {{vendor}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "qps", "label": "Queries/sec" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Database 쿼리 실행 시간",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+        "targets": [
+          {
+            "expr": "rate(django_db_query_duration_seconds_sum[5m]) / rate(django_db_query_duration_seconds_count[5m])",
+            "legendFormat": "{{alias}} - {{vendor}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "s", "label": "Query Time" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Gunicorn Workers",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 24 },
+        "targets": [
+          {
+            "expr": "count(up{job=\"django\"})",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "총 요청 수",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 6, "y": 24 },
+        "targets": [
+          {
+            "expr": "sum(django_http_requests_total_by_view_transport_method_total)",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "에러 비율 (%)",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 12, "y": 24 },
+        "targets": [
+          {
+            "expr": "100 * sum(rate(django_http_responses_total_by_status_total{status=~\"5..\"}[5m])) / sum(rate(django_http_responses_total_by_status_total[5m]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 1 },
+                { "color": "red", "value": 5 }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "CPU 사용 시간",
+        "type": "graph",
+        "gridPos": { "h": 4, "w": 6, "x": 18, "y": 24 },
+        "targets": [
+          {
+            "expr": "rate(process_cpu_seconds_total[1m])",
+            "legendFormat": "CPU Time",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "percentunit", "label": "CPU" },
+          { "format": "short" }
+        ]
+      }
+    ],
+    "refresh": "5s",
+    "time": {
+      "from": "now-15m",
+      "to": "now"
+    }
+  }
+}

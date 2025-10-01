@@ -8,6 +8,19 @@ services:
       - "8882:8882"
     env_file:
       - .env.docker
+    environment:
+      # Gunicorn Worker Configuration
+      - WORKER_CLASS=${WORKER_CLASS:-gthread}
+      - WORKERS=${WORKERS:-3}
+      - THREADS=${THREADS:-3}
+      - WORKER_CONNECTIONS=${WORKER_CONNECTIONS:-1000}
+      - MAX_REQUESTS=${MAX_REQUESTS:-1200}
+      - MAX_REQUESTS_JITTER=${MAX_REQUESTS_JITTER:-50}
+      - TIMEOUT=${TIMEOUT:-30}
+      - GRACEFUL_TIMEOUT=${GRACEFUL_TIMEOUT:-30}
+      - KEEP_ALIVE=${KEEP_ALIVE:-5}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - BIND_ADDRESS=${BIND_ADDRESS:-0.0.0.0:8882}
     depends_on:
       postgresql_db:
         condition: service_healthy
